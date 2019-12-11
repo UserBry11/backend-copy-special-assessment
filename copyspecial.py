@@ -24,7 +24,7 @@ def get_special_paths(from_dir):
 
     for file in file_directory:
 
-        if re.search('\w+__\w+__.\w+', file):
+        if re.search(r'\w+__\w+__.\w+', file):
             special_path = os.path.abspath(file)
             special_files_list.append(special_path)
 
@@ -32,11 +32,15 @@ def get_special_paths(from_dir):
 
 
 def copy_to(src_path_list, todir):
+
+    if todir.startswith("/"):
+        todir = todir[1:]
+
     dst_path = os.path.abspath(todir)
 
     try:
-        os.mkdir(dst_path)
-    except:
+        os.makedirs(dst_path)
+    except OSError:
         print("Format: --todir /yourdirectory\nDirectory May exist already")
 
     for src in src_path_list:
@@ -46,7 +50,8 @@ def copy_to(src_path_list, todir):
 
 
 def zip_function(special_file_list, to_zip):
-    print("Command I'm going to do: zip -j {} {}".format(to_zip, special_file_list))
+    print("Command I'm going to do: zip -j {} {}".format(to_zip,
+                                                         special_file_list))
 
     for each in special_file_list:
         subprocess.call(['zip', '-j', to_zip, each])
