@@ -10,11 +10,49 @@
 # http://code.google.com/edu/languages/google-python-class/
 
 import os
+import re
 import shutil
 import subprocess
 import argparse
 
 __author__ = "Bryan"
+
+
+def get_special_paths(from_dir):
+    file_directory = os.listdir(from_dir)
+    special_files_list = []
+
+    for file in file_directory:
+
+        if re.search('\w+__\w+__.\w+', file):
+            special_path = os.path.abspath(file)
+            special_files_list.append(special_path)
+
+    return special_files_list
+
+
+def copy_to(src_path_list, todir):
+    dst_path = os.path.abspath(todir)
+
+    try:
+        os.mkdir(dst_path)
+    except:
+        print("Format: --todir /yourdirectory\nDirectory May exist already")
+
+    for src in src_path_list:
+        shutil.copy(src, dst_path)
+
+    return
+
+
+def zip_function(special_file_list, to_zip):
+    print("Command I'm going to do: zip -j {} {}".format(to_zip, special_file_list))
+
+    for each in special_file_list:
+        subprocess.call(['zip', '-j', to_zip, each])
+
+    return
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -23,28 +61,18 @@ def main():
     parser.add_argument('from_dir', help='from directory')
     args = parser.parse_args()
 
-    file_directory = os.listdir(args.from_dir)
-    
-    if args.todir:     
-        dst_path = os.getcwd() + args.todir
-        src_path = os.getcwd()
-        try:
-            shutil.copytree(src_path, dst_path)
-        except:
-            print("Format: --todir /yourdirectory\nDirectory and/or file(s) May exist already")
+    special_file_list = get_special_paths(args.from_dir)
 
-        return
+    if args.todir:
+        copy_to(special_file_list, args.todir)
 
     elif args.tozip:
-        subprocess.call(['zip', '-r', args.tozip, args.from_dir])
-        print("Command I'm going to do: zip -r {} {}".format(args.tozip, args.from_dir))
-        return
+        zip_function(special_file_list, args.tozip)
 
-
-    for file in file_directory:
-
-        file_path = os.path.abspath(file)
-        print(file_path)
+    else:
+        for special in special_file_list:
+            print(special)
+        print("\n")
 
 
 if __name__ == "__main__":
